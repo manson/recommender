@@ -6,15 +6,20 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// User is a user who recommends something
 type User struct {
-	Id      string            `json:"id"`
+	ID      string            `json:"id"`
 	Name    string            `json:"name"`
 	Ratings map[string]Rating `json:"ratings"`
 }
 
 // NewUser creates and returns a new User
-func NewUser(name string) *User {
-	return &User{Id: uuid.NewV4().String(), Name: name}
+func NewUser(id string, name string) (*User, error) {
+
+	if id == "" {
+		id = uuid.NewV4().String()
+	}
+	return &User{ID: id, Name: name}, nil
 }
 
 // String represents a User as a string

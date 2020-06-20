@@ -5,27 +5,27 @@ import (
 	"log"
 	"testing"
 
-	"github.com/nikovacevic/recommender"
+	"github.com/manson/recommender"
 )
 
 func TestLike(t *testing.T) {
 	// log.Printf("TestLike")
 
-	r, err := recommender.NewRecommender()
+	r, err := recommender.NewRecommender(true)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 
-	niko := recommender.NewUser("Niko Kovacevic")
-	aubreigh := recommender.NewUser("Aubreigh Brunschwig")
+	niko, _ := recommender.NewUser("1", "Niko Kovacevic")
+	aubreigh, _ := recommender.NewUser("2", "Aubreigh Brunschwig")
 
-	denver := recommender.NewItem("Denver")
-	phoenix := recommender.NewItem("Phoenix")
-	pittsburgh := recommender.NewItem("Pittsburgh")
-	portland := recommender.NewItem("Portland")
-	losAngeles := recommender.NewItem("Los Angeles")
-	miami := recommender.NewItem("Miami")
+	denver, _ := recommender.NewItem("Denver", "Denver")
+	phoenix, _ := recommender.NewItem("Phoenix", "Phoenix")
+	pittsburgh, _ := recommender.NewItem("Pittsburgh", "Pittsburgh")
+	portland, _ := recommender.NewItem("Portland", "Portland")
+	losAngeles, _ := recommender.NewItem("Los_Angeles", "Los Angeles")
+	miami, _ := recommender.NewItem("Miami", "Miami")
 
 	// GetLikedItems should return no items at this point
 	items, err := r.GetLikedItems(niko)
@@ -85,17 +85,17 @@ func TestLike(t *testing.T) {
 func TestDisLike(t *testing.T) {
 	// log.Printf("TestDislike")
 
-	r, err := recommender.NewRecommender()
+	r, err := recommender.NewRecommender(true)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 
-	niko := recommender.NewUser("Niko Kovacevic")
+	niko, _ := recommender.NewUser("1", "Niko Kovacevic")
 
-	phoenix := recommender.NewItem("Phoenix")
-	losAngeles := recommender.NewItem("Los Angeles")
-	miami := recommender.NewItem("Miami")
+	phoenix, _ := recommender.NewItem("Phoenix", "Phoenix")
+	losAngeles, _ := recommender.NewItem("Los_Angeles", "Los Angeles")
+	miami, _ := recommender.NewItem("Miami", "Miami")
 
 	// GetLikedItems should return no items at this point
 	items, err := r.GetDislikedItems(niko)
@@ -148,20 +148,20 @@ func TestDisLike(t *testing.T) {
 func TestGetRatings(t *testing.T) {
 	// log.Printf("TestGetRatings")
 
-	r, err := recommender.NewRecommender()
+	r, err := recommender.NewRecommender(true)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 
-	niko := recommender.NewUser("Niko Kovacevic")
+	niko, _ := recommender.NewUser("1", "Niko Kovacevic")
 
-	phoenix := recommender.NewItem("Phoenix")
-	losAngeles := recommender.NewItem("Los Angeles")
-	miami := recommender.NewItem("Miami")
-	pittsburgh := recommender.NewItem("Pittsburgh")
-	boulder := recommender.NewItem("Boulder")
-	seattle := recommender.NewItem("Seattle")
+	phoenix, _ := recommender.NewItem("Phoenix", "Phoenix")
+	losAngeles, _ := recommender.NewItem("Los_Angeles", "Los Angeles")
+	miami, _ := recommender.NewItem("Miami", "Miami")
+	pittsburgh, _ := recommender.NewItem("Pittsburgh", "Pittsburgh")
+	boulder, _ := recommender.NewItem("Boulder", "Boulder")
+	seattle, _ := recommender.NewItem("Seattle", "Seattle")
 
 	// GetLikedItems should return no items at this point
 	ratings, err := r.GetRatings(niko)
@@ -200,20 +200,20 @@ func TestGetRatings(t *testing.T) {
 func TestGetUsersWhoRated(t *testing.T) {
 	// log.Printf("TestGetUsersWhoRated")
 
-	r, err := recommender.NewRecommender()
+	r, err := recommender.NewRecommender(true)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 
-	niko := recommender.NewUser("Niko Kovacevic")
-	aubreigh := recommender.NewUser("Aubreigh Brunschwig")
-	johnny := recommender.NewUser("Johnny Bernard")
-	amanda := recommender.NewUser("Amanda Hunt")
-	nick := recommender.NewUser("Nick Evers")
+	niko, _ := recommender.NewUser("1", "Niko Kovacevic")
+	aubreigh, _ := recommender.NewUser("2", "Aubreigh Brunschwig")
+	johnny, _ := recommender.NewUser("3", "Johnny Bernard")
+	amanda, _ := recommender.NewUser("4", "Amanda Hunt")
+	nick, _ := recommender.NewUser("5", "Nick Evers")
 
-	phoenix := recommender.NewItem("Phoenix")
-	pittsburgh := recommender.NewItem("Pittsburgh")
+	phoenix, _ := recommender.NewItem("Phoenix", "Phoenix")
+	pittsburgh, _ := recommender.NewItem("Pittsburgh", "Pittsburgh")
 
 	// GetUsersWhoRated should return no users at this point
 	users, err := r.GetUsersWhoRated(pittsburgh)
@@ -260,20 +260,20 @@ func TestGetUsersWhoRated(t *testing.T) {
 func TestGetRatingNeighbors(t *testing.T) {
 	// log.Printf("TestGetRatingNeighbors")
 
-	r, err := recommender.NewRecommender()
+	r, err := recommender.NewRecommender(true)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 
-	niko := recommender.NewUser("Niko Kovacevic")
-	aubreigh := recommender.NewUser("Aubreigh Brunschwig")
-	johnny := recommender.NewUser("Johnny Bernard")
-	amanda := recommender.NewUser("Amanda Hunt")
-	nick := recommender.NewUser("Nick Evers")
+	niko, _ := recommender.NewUser("1", "Niko Kovacevic")
+	aubreigh, _ := recommender.NewUser("2", "Aubreigh Brunschwig")
+	johnny, _ := recommender.NewUser("3", "Johnny Bernard")
+	amanda, _ := recommender.NewUser("4", "Amanda Hunt")
+	nick, _ := recommender.NewUser("5", "Nick Evers")
 
-	phoenix := recommender.NewItem("Phoenix")
-	pittsburgh := recommender.NewItem("Pittsburgh")
+	phoenix, _ := recommender.NewItem("Phoenix", "Phoenix")
+	pittsburgh, _ := recommender.NewItem("Pittsburgh", "Pittsburgh")
 
 	// GetRatingNeighbors should return no users at this point
 	neighbors, err := r.GetRatingNeighbors(niko)
@@ -312,23 +312,23 @@ func TestGetRatingNeighbors(t *testing.T) {
 func TestSimilarity(t *testing.T) {
 	//log.Printf("TestSimilarity")
 
-	r, err := recommender.NewRecommender()
+	r, err := recommender.NewRecommender(true)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 
-	niko := recommender.NewUser("Niko Kovacevic")
-	aubreigh := recommender.NewUser("Aubreigh Brunschwig")
-	johnny := recommender.NewUser("Johnny Bernard")
-	nick := recommender.NewUser("Nick Evers")
+	niko, _ := recommender.NewUser("1", "Niko Kovacevic")
+	aubreigh, _ := recommender.NewUser("2", "Aubreigh Brunschwig")
+	johnny, _ := recommender.NewUser("3", "Johnny Bernard")
+	nick, _ := recommender.NewUser("5", "Nick Evers")
 
-	phoenix := recommender.NewItem("Phoenix")
-	pittsburgh := recommender.NewItem("Pittsburgh")
-	boulder := recommender.NewItem("Boulder")
-	losAngeles := recommender.NewItem("Los Angeles")
-	portland := recommender.NewItem("Portland")
-	seattle := recommender.NewItem("Seattle")
+	phoenix, _ := recommender.NewItem("Phoenix", "Phoenix")
+	pittsburgh, _ := recommender.NewItem("Pittsburgh", "Pittsburgh")
+	boulder, _ := recommender.NewItem("Boulder", "Boulder")
+	losAngeles, _ := recommender.NewItem("Los_Angeles", "Los Angeles")
+	portland, _ := recommender.NewItem("Portland", "Portland")
+	seattle, _ := recommender.NewItem("Seattle", "Seattle")
 
 	// GetSimilarity should return nothing at this point
 	nikoSims, err := r.GetSimilarity(niko)
@@ -390,69 +390,69 @@ func TestSimilarity(t *testing.T) {
 	}
 
 	// Test commutativity
-	if nikoSims[aubreigh.Id].Index != aubreighSims[niko.Id].Index {
+	if nikoSims[aubreigh.ID].Index != aubreighSims[niko.ID].Index {
 		t.Errorf("Similarity(Niko, Aubreigh) should equaul Similarity(Aubreigh, Niko).")
 	}
-	if nikoSims[nick.Id].Index != nickSims[niko.Id].Index {
+	if nikoSims[nick.ID].Index != nickSims[niko.ID].Index {
 		t.Errorf("Similarity(Niko, Nick) should equaul Similarity(Nick, Niko).")
 	}
-	if nikoSims[johnny.Id].Index != johnnySims[niko.Id].Index {
+	if nikoSims[johnny.ID].Index != johnnySims[niko.ID].Index {
 		t.Errorf("Similarity(Niko, Johnny) should equaul Similarity(Johnny, Niko).")
 	}
 
 	// Test values
-	if float32(nikoSims[aubreigh.Id].Index) != float32(2.0/6.0) {
-		t.Errorf("Similarity(Niko, Aubreigh) should be %f. Actually %f", float32(2.0/6.0), nikoSims[aubreigh.Id])
+	if float32(nikoSims[aubreigh.ID].Index) != float32(2.0/6.0) {
+		t.Errorf("Similarity(Niko, Aubreigh) should be %f. Actually %f", float32(2.0/6.0), nikoSims[aubreigh.ID].Index)
 	}
-	if float32(nikoSims[nick.Id].Index) != float32(1) {
-		t.Errorf("Similarity(Niko, Nick) should be %f. Actually %f", 1, nikoSims[nick.Id])
+	if float32(nikoSims[nick.ID].Index) != float32(1) {
+		t.Errorf("Similarity(Niko, Nick) should be %f. Actually %f", float32(1), nikoSims[nick.ID].Index)
 	}
-	if float32(nikoSims[johnny.Id].Index) != float32(-1) {
-		t.Errorf("Similarity(Niko, Johnny) should be %f. Actually %f", -1, nikoSims[johnny.Id])
+	if float32(nikoSims[johnny.ID].Index) != float32(-1) {
+		t.Errorf("Similarity(Niko, Johnny) should be %f. Actually %f", float32(-1), nikoSims[johnny.ID].Index)
 	}
 }
 
 func TestSuggestions(t *testing.T) {
 	log.Printf("TestSuggestions")
 
-	r, err := recommender.NewRecommender()
+	r, err := recommender.NewRecommender(true)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer r.Close()
 
-	niko := recommender.NewUser("Niko Kovacevic")
-	aubreigh := recommender.NewUser("Aubreigh Brunschwig")
-	johnny := recommender.NewUser("Johnny Bernard")
-	amanda := recommender.NewUser("Amanda Hunt")
-	nick := recommender.NewUser("Nick Evers")
-	katie := recommender.NewUser("Katie Yoder")
-	matt := recommender.NewUser("Matt Rolland")
-	bekah := recommender.NewUser("Bekah Sandoval")
-	bill := recommender.NewUser("Bill Taggart")
-	megan := recommender.NewUser("Megan Murzyn")
+	niko, _ := recommender.NewUser("1", "Niko Kovacevic")
+	aubreigh, _ := recommender.NewUser("2", "Aubreigh Brunschwig")
+	johnny, _ := recommender.NewUser("3", "Johnny Bernard")
+	amanda, _ := recommender.NewUser("4", "Amanda Hunt")
+	nick, _ := recommender.NewUser("5", "Nick Evers")
+	katie, _ := recommender.NewUser("Katie Yoder", "Katie Yoder")
+	matt, _ := recommender.NewUser("Matt Rolland", "Matt Rolland")
+	bekah, _ := recommender.NewUser("Bekah Sandoval", "Bekah Sandoval")
+	bill, _ := recommender.NewUser("Bill Taggart", "Bill Taggart")
+	megan, _ := recommender.NewUser("Megan Murzyn", "Megan Murzyn")
 
-	ashland := recommender.NewItem("Ashland, Oregon")
-	austin := recommender.NewItem("Austin, Texas")
-	boulder := recommender.NewItem("Boulder, Colorado")
-	denver := recommender.NewItem("Denver, Colorado")
-	flagstaff := recommender.NewItem("Flagstaff, Arizona")
-	houston := recommender.NewItem("Houston, Texas")
-	lasVegas := recommender.NewItem("Las Vegas, Nevada")
-	losAngeles := recommender.NewItem("Los Angeles, California")
-	newYork := recommender.NewItem("New York, New York")
-	philadelphia := recommender.NewItem("Philadelphia, Pennsylvania")
-	phoenix := recommender.NewItem("Phoenix, Arizona")
-	pittsburgh := recommender.NewItem("Pittsburgh, Pennsylvania")
-	portlandOR := recommender.NewItem("Portland, Oregon")
-	portlandME := recommender.NewItem("Portland, Maine")
-	princeton := recommender.NewItem("Princeton, New Jersey")
-	sacramento := recommender.NewItem("Sacramento, California")
-	sanFrancisco := recommender.NewItem("San Francisco, California")
-	santaFe := recommender.NewItem("Santa Fe, New Mexico")
-	seattle := recommender.NewItem("Seattle, Washington")
-	tacoma := recommender.NewItem("Tacoma, Washington")
-	tucson := recommender.NewItem("Tucson, Arizona")
+	ashland, _ := recommender.NewItem("Ashland, Oregon", "Ashland, Oregon")
+	austin, _ := recommender.NewItem("Austin_Texas", "Austin, Texas")
+	boulder, _ := recommender.NewItem("Boulder, Colorado", "Boulder, Colorado")
+	denver, _ := recommender.NewItem("Denver, Colorado", "Denver, Colorado")
+	flagstaff, _ := recommender.NewItem("Flagstaff, Arizona", "Flagstaff, Arizona")
+	houston, _ := recommender.NewItem("Houston, Texas", "Houston, Texas")
+	lasVegas, _ := recommender.NewItem("Las Vegas, Nevada", "Las Vegas, Nevada")
+	losAngeles, _ := recommender.NewItem("Los Angeles, California", "Los Angeles, California")
+	newYork, _ := recommender.NewItem("New York, New York", "New York, New York")
+	philadelphia, _ := recommender.NewItem("Philadelphia, Pennsylvania", "Philadelphia, Pennsylvania")
+	phoenix, _ := recommender.NewItem("Phoenix, Arizona", "Phoenix, Arizona")
+	pittsburgh, _ := recommender.NewItem("Pittsburgh, Pennsylvania", "Pittsburgh, Pennsylvania")
+	portlandOR, _ := recommender.NewItem("Portland, Oregon", "Portland, Oregon")
+	portlandME, _ := recommender.NewItem("Portland, Maine", "Portland, Maine")
+	princeton, _ := recommender.NewItem("Princeton, New Jersey", "Princeton, New Jersey")
+	sacramento, _ := recommender.NewItem("Sacramento, California", "Sacramento, California")
+	sanFrancisco, _ := recommender.NewItem("San Francisco, California", "San Francisco, California")
+	santaFe, _ := recommender.NewItem("Santa Fe, New Mexico", "Santa Fe, New Mexico")
+	seattle, _ := recommender.NewItem("Seattle, Washington", "Seattle, Washington")
+	tacoma, _ := recommender.NewItem("Tacoma, Washington", "Tacoma, Washington")
+	tucson, _ := recommender.NewItem("Tucson, Arizona", "Tucson, Arizona")
 
 	// GetSuggestions should return nothing at this point
 	nikoSuggestions, err := r.GetSuggestions(niko)
@@ -581,4 +581,8 @@ func TestSuggestions(t *testing.T) {
 			fmt.Printf("%v\n", suggestion)
 		}
 	}
+	for _, suggestion := range nikoSuggestions {
+		fmt.Printf("%s - %v\n", suggestion.Item.ID, suggestion)
+	}
+
 }

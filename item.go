@@ -6,14 +6,19 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// Item is and item to recommend
 type Item struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 // NewItem creates and returns an Item
-func NewItem(name string) *Item {
-	return &Item{Id: uuid.NewV4().String(), Name: name}
+func NewItem(id string, name string) (*Item, error) {
+
+	if id == "" {
+		id = uuid.NewV4().String()
+	}
+	return &Item{ID: id, Name: name}, nil
 }
 
 // String represents an Item as a string

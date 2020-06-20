@@ -3,6 +3,7 @@ package recommender
 import (
 	"encoding/json"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/boltdb/bolt"
@@ -26,8 +27,19 @@ const (
 )
 
 // NewRecommender returns a new Recommender. The database is opened and buckets are created.
-func NewRecommender() (*Recommender, error) {
+// true in params means to drop db if exists
+func NewRecommender(params ...bool) (*Recommender, error) {
 	// Create key/value store for ratings data
+	if len(params) > 0 && params[0] == true {
+		_, err := os.Stat(dbName)
+		if !os.IsNotExist(err) {
+			err = os.Remove(dbName)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	db, err := bolt.Open(dbName, 0600, nil)
 	if err != nil {
 		return nil, err
@@ -85,7 +97,7 @@ func (r *Recommender) GetLikedItems(user *User) (map[string]Item, error) {
 	if err := r.db.View(func(tx *bolt.Tx) error {
 		// Get item IDs
 		userLikesBucket := tx.Bucket([]byte(userLikesBucketName))
-		data := userLikesBucket.Get([]byte(user.Id))
+		data := userLikesBucket.Get([]byte(user.ID))
 		if data == nil {
 			return nil
 		}
@@ -117,7 +129,7 @@ func (r *Recommender) GetDislikedItems(user *User) (map[string]Item, error) {
 	if err := r.db.View(func(tx *bolt.Tx) error {
 		// Get item IDs
 		userDislikesBucket := tx.Bucket([]byte(userDislikesBucketName))
-		data := userDislikesBucket.Get([]byte(user.Id))
+		data := userDislikesBucket.Get([]byte(user.ID))
 		if data == nil {
 			return nil
 		}
@@ -168,7 +180,7 @@ func (r *Recommender) GetUsersWhoLike(item *Item) (map[string]User, error) {
 	if err := r.db.View(func(tx *bolt.Tx) error {
 		itemLikeBucket := tx.Bucket([]byte(itemLikesBucketName))
 		// Get user IDs
-		data := itemLikeBucket.Get([]byte(item.Id))
+		data := itemLikeBucket.Get([]byte(item.ID))
 		if data == nil {
 			return nil
 		}
@@ -200,7 +212,7 @@ func (r *Recommender) GetUsersWhoDislike(item *Item) (map[string]User, error) {
 	if err := r.db.View(func(tx *bolt.Tx) error {
 		itemDislikeBucket := tx.Bucket([]byte(itemDislikesBucketName))
 		// Get user IDs
-		data := itemDislikeBucket.Get([]byte(item.Id))
+		data := itemDislikeBucket.Get([]byte(item.ID))
 		if data == nil {
 			return nil
 		}
@@ -266,7 +278,7 @@ func (r *Recommender) GetUsersWhoRated(item *Item) (map[string]User, error) {
 	// channel closes.
 	users := make(map[string]User)
 	for user := range userCh {
-		users[user.Id] = user
+		users[user.ID] = user
 	}
 
 	return users, nil
@@ -361,7 +373,7 @@ func (r *Recommender) addUser(user *User) error {
 	err := r.db.Update(func(tx *bolt.Tx) error {
 		userBucket := tx.Bucket([]byte(userBucketName))
 		// Return early if user already exists
-		if data := userBucket.Get([]byte(user.Id)); data != nil {
+		if data := userBucket.Get([]byte(user.ID)); data != nil {
 			return nil
 		}
 		// Write JSON encoding of user to DB
@@ -369,7 +381,7 @@ func (r *Recommender) addUser(user *User) error {
 		if err != nil {
 			return err
 		}
-		if err := userBucket.Put([]byte(user.Id), data); err != nil {
+		if err := userBucket.Put([]byte(user.ID), data); err != nil {
 			return err
 		}
 		// log.Printf("User %s added.\n", user.Name)
@@ -387,7 +399,7 @@ func (r *Recommender) addItem(item *Item) error {
 	err := r.db.Update(func(tx *bolt.Tx) error {
 		itemBucket := tx.Bucket([]byte(itemBucketName))
 		// Return early if item already exists
-		if data := itemBucket.Get([]byte(item.Id)); data != nil {
+		if data := itemBucket.Get([]byte(item.ID)); data != nil {
 			return nil
 		}
 		// Write JSON encoding of item to DB
@@ -395,7 +407,7 @@ func (r *Recommender) addItem(item *Item) error {
 		if err != nil {
 			return err
 		}
-		if err := itemBucket.Put([]byte(item.Id), data); err != nil {
+		if err := itemBucket.Put([]byte(item.ID), data); err != nil {
 			return err
 		}
 		// log.Printf("Item %s added.\n", item.Name)
@@ -418,44 +430,44 @@ func (r *Recommender) addLike(user *User, item *Item) error {
 		userLikesBucket := tx.Bucket([]byte(userLikesBucketName))
 
 		// Find user's liked items
-		if data := userLikesBucket.Get([]byte(user.Id)); data != nil {
+		if data := userLikesBucket.Get([]byte(user.ID)); data != nil {
 			// Get user's liked item IDs
 			if err := json.Unmarshal(data, &itemIds); err != nil {
 				return err
 			}
 			// If user already likes item, return early
-			if itemIds[item.Id] {
+			if itemIds[item.ID] {
 				// log.Printf("Like by (%s, %s) already exists.\n", item.Name, user.Name)
 				return nil
 			}
 		}
 
 		// Add item to user's liked items
-		itemIds[item.Id] = true
+		itemIds[item.ID] = true
 		data, err := json.Marshal(itemIds)
 		if err != nil {
 			return err
 		}
-		if err := userLikesBucket.Put([]byte(user.Id), data); err != nil {
+		if err := userLikesBucket.Put([]byte(user.ID), data); err != nil {
 			return err
 		}
 
 		// Find user's disliked items
 		itemIds = make(map[string]bool)
 		userDislikesBucket := tx.Bucket([]byte(userDislikesBucketName))
-		if data := userDislikesBucket.Get([]byte(user.Id)); data != nil {
+		if data := userDislikesBucket.Get([]byte(user.ID)); data != nil {
 			// Get user's disliked item IDs
 			if err := json.Unmarshal(data, &itemIds); err != nil {
 				return err
 			}
 			// If user dislikes item, remove the dislike
-			if itemIds[item.Id] {
-				delete(itemIds, item.Id)
+			if itemIds[item.ID] {
+				delete(itemIds, item.ID)
 				data, err := json.Marshal(itemIds)
 				if err != nil {
 					return err
 				}
-				if err := userDislikesBucket.Put([]byte(user.Id), data); err != nil {
+				if err := userDislikesBucket.Put([]byte(user.ID), data); err != nil {
 					return err
 				}
 				// log.Printf("Disike (%s, %s) removed.\n", user.Name, item.Name)
@@ -465,44 +477,44 @@ func (r *Recommender) addLike(user *User, item *Item) error {
 		userIds := make(map[string]bool)
 		itemLikesBucket := tx.Bucket([]byte(itemLikesBucketName))
 		// Find users who like item
-		if data := itemLikesBucket.Get([]byte(item.Id)); data != nil {
+		if data := itemLikesBucket.Get([]byte(item.ID)); data != nil {
 			// Get item's liked-by user IDs
 			if err := json.Unmarshal(data, &userIds); err != nil {
 				return err
 			}
 			// If item already liked by user, return early
-			if userIds[user.Id] {
+			if userIds[user.ID] {
 				// log.Printf("Like (%s, %s) already exists.\n", user.Name, item.Name)
 				return nil
 			}
 		}
 
 		// Add user to item's liked-by
-		userIds[user.Id] = true
+		userIds[user.ID] = true
 		data, err = json.Marshal(userIds)
 		if err != nil {
 			return err
 		}
-		if err := itemLikesBucket.Put([]byte(item.Id), data); err != nil {
+		if err := itemLikesBucket.Put([]byte(item.ID), data); err != nil {
 			return err
 		}
 
 		// Find users who dislike item
 		userIds = make(map[string]bool)
 		itemDislikesBucket := tx.Bucket([]byte(itemDislikesBucketName))
-		if data := itemDislikesBucket.Get([]byte(item.Id)); data != nil {
+		if data := itemDislikesBucket.Get([]byte(item.ID)); data != nil {
 			// Get item's liked item IDs
 			if err := json.Unmarshal(data, &userIds); err != nil {
 				return err
 			}
 			// If item dislikes item, remove the dislike
-			if userIds[user.Id] {
-				delete(userIds, user.Id)
+			if userIds[user.ID] {
+				delete(userIds, user.ID)
 				data, err := json.Marshal(userIds)
 				if err != nil {
 					return err
 				}
-				if err := itemDislikesBucket.Put([]byte(user.Id), data); err != nil {
+				if err := itemDislikesBucket.Put([]byte(user.ID), data); err != nil {
 					return err
 				}
 				// log.Printf("Dislike (%s, %s) removed.\n", user.Name, item.Name)
@@ -527,44 +539,44 @@ func (r *Recommender) addDislike(user *User, item *Item) error {
 		userDislikesBucket := tx.Bucket([]byte(userDislikesBucketName))
 
 		// Find user's disliked items
-		if data := userDislikesBucket.Get([]byte(user.Id)); data != nil {
+		if data := userDislikesBucket.Get([]byte(user.ID)); data != nil {
 			// Get user's disliked item IDs
 			if err := json.Unmarshal(data, &itemIds); err != nil {
 				return err
 			}
 			// If user already dislikes item, return early
-			if itemIds[item.Id] {
+			if itemIds[item.ID] {
 				// log.Printf("Dislike (%s, %s) already exists.\n", item.Name, user.Name)
 				return nil
 			}
 		}
 
 		// Add item to user's disliked items
-		itemIds[item.Id] = true
+		itemIds[item.ID] = true
 		data, err := json.Marshal(itemIds)
 		if err != nil {
 			return err
 		}
-		if err := userDislikesBucket.Put([]byte(user.Id), data); err != nil {
+		if err := userDislikesBucket.Put([]byte(user.ID), data); err != nil {
 			return err
 		}
 
 		// Find user's liked items
 		itemIds = make(map[string]bool)
 		userLikesBucket := tx.Bucket([]byte(userLikesBucketName))
-		if data := userLikesBucket.Get([]byte(user.Id)); data != nil {
+		if data := userLikesBucket.Get([]byte(user.ID)); data != nil {
 			// Get user's liked item IDs
 			if err := json.Unmarshal(data, &itemIds); err != nil {
 				return err
 			}
 			// If user likes item, remove the like
-			if itemIds[item.Id] {
-				delete(itemIds, item.Id)
+			if itemIds[item.ID] {
+				delete(itemIds, item.ID)
 				data, err := json.Marshal(itemIds)
 				if err != nil {
 					return err
 				}
-				if err := userLikesBucket.Put([]byte(user.Id), data); err != nil {
+				if err := userLikesBucket.Put([]byte(user.ID), data); err != nil {
 					return err
 				}
 				// log.Printf("Like (%s, %s) removed.\n", user.Name, item.Name)
@@ -574,44 +586,44 @@ func (r *Recommender) addDislike(user *User, item *Item) error {
 		userIds := make(map[string]bool)
 		itemDislikesBucket := tx.Bucket([]byte(itemDislikesBucketName))
 		// Find users who dislike item
-		if data := itemDislikesBucket.Get([]byte(item.Id)); data != nil {
+		if data := itemDislikesBucket.Get([]byte(item.ID)); data != nil {
 			// Get item's disliked-by user IDs
 			if err := json.Unmarshal(data, &userIds); err != nil {
 				return err
 			}
 			// If item already disliked by user, return early
-			if userIds[user.Id] {
+			if userIds[user.ID] {
 				// log.Printf("Dislike (%s, %s) already exists.\n", user.Name, item.Name)
 				return nil
 			}
 		}
 
 		// Add user to item's disliked-by
-		userIds[user.Id] = true
+		userIds[user.ID] = true
 		data, err = json.Marshal(userIds)
 		if err != nil {
 			return err
 		}
-		if err := itemDislikesBucket.Put([]byte(item.Id), data); err != nil {
+		if err := itemDislikesBucket.Put([]byte(item.ID), data); err != nil {
 			return err
 		}
 
 		// Find users who like item
 		userIds = make(map[string]bool)
 		itemLikesBucket := tx.Bucket([]byte(itemLikesBucketName))
-		if data := itemLikesBucket.Get([]byte(item.Id)); data != nil {
+		if data := itemLikesBucket.Get([]byte(item.ID)); data != nil {
 			// Get item's liked item IDs
 			if err := json.Unmarshal(data, &userIds); err != nil {
 				return err
 			}
 			// If item dislikes item, remove the dislike
-			if userIds[user.Id] {
-				delete(userIds, user.Id)
+			if userIds[user.ID] {
+				delete(userIds, user.ID)
 				data, err := json.Marshal(userIds)
 				if err != nil {
 					return err
 				}
-				if err := itemLikesBucket.Put([]byte(user.Id), data); err != nil {
+				if err := itemLikesBucket.Put([]byte(user.ID), data); err != nil {
 					return err
 				}
 				// log.Printf("Like (%s, %s) removed.\n", user.Name, item.Name)
@@ -738,7 +750,7 @@ func (r *Recommender) GetRatings(user *User) (map[string]Rating, error) {
 		return nil, err
 	}
 	for rating := range ratingCh {
-		ratings[rating.Item.Id] = rating
+		ratings[rating.Item.ID] = rating
 	}
 
 	return ratings, nil
@@ -781,7 +793,7 @@ func (r *Recommender) GetRatingNeighbors(user *User) (map[string]User, error) {
 	}
 
 	// Delete given user from their own set of neighbors
-	delete(neighborMap, user.Id)
+	delete(neighborMap, user.ID)
 
 	return neighborMap, nil
 }
@@ -864,37 +876,37 @@ func (r *Recommender) updateSimilarity(user1 *User, user2 *User, index Similarit
 
 		// Get user1's existing similarities
 		similarityMap := make(map[string]SimilarityIndex)
-		if data := userSimilarityBucket.Get([]byte(user1.Id)); data != nil {
+		if data := userSimilarityBucket.Get([]byte(user1.ID)); data != nil {
 			if err := json.Unmarshal(data, &similarityMap); err != nil {
 				return err
 			}
 		}
 		// Set new index
-		similarityMap[user2.Id] = index
+		similarityMap[user2.ID] = index
 		data, err := json.Marshal(similarityMap)
 		if err != nil {
 			return err
 		}
 		// Write updated map to bucket
-		if err := userSimilarityBucket.Put([]byte(user1.Id), data); err != nil {
+		if err := userSimilarityBucket.Put([]byte(user1.ID), data); err != nil {
 			return err
 		}
 
 		// Get user2's existing similarities
 		similarityMap = make(map[string]SimilarityIndex)
-		if data := userSimilarityBucket.Get([]byte(user2.Id)); data != nil {
+		if data := userSimilarityBucket.Get([]byte(user2.ID)); data != nil {
 			if err := json.Unmarshal(data, &similarityMap); err != nil {
 				return err
 			}
 		}
 		// Set new index
-		similarityMap[user1.Id] = index
+		similarityMap[user1.ID] = index
 		data, err = json.Marshal(similarityMap)
 		if err != nil {
 			return err
 		}
 		// Write updated map to bucket
-		if err := userSimilarityBucket.Put([]byte(user2.Id), data); err != nil {
+		if err := userSimilarityBucket.Put([]byte(user2.ID), data); err != nil {
 			return err
 		}
 
@@ -913,7 +925,7 @@ func (r *Recommender) channelSimilarity(user *User) (<-chan Similarity, error) {
 
 	if err := r.db.View(func(tx *bolt.Tx) error {
 		userSimilarityBucket := tx.Bucket([]byte(userSimilarityBucketName))
-		if data := userSimilarityBucket.Get([]byte(user.Id)); data != nil {
+		if data := userSimilarityBucket.Get([]byte(user.ID)); data != nil {
 			if err := json.Unmarshal(data, &similarityIndexMap); err != nil {
 				return err
 			}
@@ -950,7 +962,7 @@ func (r *Recommender) GetSimilarity(user *User) (map[string]Similarity, error) {
 		return nil, err
 	}
 	for similarity := range similarityCh {
-		similarityMap[similarity.User.Id] = similarity
+		similarityMap[similarity.User.ID] = similarity
 	}
 	return similarityMap, nil
 }
@@ -983,7 +995,7 @@ func (r *Recommender) UpdateSuggestions(user *User) error {
 			// For each rated item, if user has not rated the item,
 			// send it into itemCh
 			for r := range ratingsCh {
-				if _, exists := user.Ratings[r.Item.Id]; !exists {
+				if _, exists := user.Ratings[r.Item.ID]; !exists {
 					itemCh <- r.Item
 				}
 			}
@@ -1027,7 +1039,7 @@ func (r *Recommender) UpdateSuggestions(user *User) error {
 		}
 		// Build Suggestion, then add it to the map
 		index := (zL - zD) / total
-		suggestionMap[item.Id] = Suggestion{
+		suggestionMap[item.ID] = Suggestion{
 			Item:  item,
 			Index: SuggestionIndex(index),
 		}
@@ -1040,7 +1052,7 @@ func (r *Recommender) UpdateSuggestions(user *User) error {
 		if err != nil {
 			return err
 		}
-		if err := suggestionBucket.Put([]byte(user.Id), data); err != nil {
+		if err := suggestionBucket.Put([]byte(user.ID), data); err != nil {
 			return err
 		}
 		return nil
@@ -1056,7 +1068,7 @@ func (r *Recommender) GetSuggestions(user *User) (map[string]Suggestion, error) 
 	suggestionMap := make(map[string]Suggestion)
 	if err := r.db.View(func(tx *bolt.Tx) error {
 		suggestionBucket := tx.Bucket([]byte(suggestionBucketName))
-		if data := suggestionBucket.Get([]byte(user.Id)); data != nil {
+		if data := suggestionBucket.Get([]byte(user.ID)); data != nil {
 			if err := json.Unmarshal(data, &suggestionMap); err != nil {
 				return err
 			}
